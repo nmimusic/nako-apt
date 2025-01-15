@@ -458,7 +458,7 @@ operation_remove() {
 operation_getsource(){
 	local _pkg
 	for _pkg in "${specified_pkgs[@]}"; do
-		"${_apt_cmd}" source "${_pkg}"
+		"${apt_cmd}" source "${_pkg}"
 	done
 }
 

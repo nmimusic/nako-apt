@@ -369,7 +369,7 @@ check_repo_grp() {
 }
 
 # Return 0 if the package specified by the argument is already installed
-check_installed_pkg() { "${apt_cmd}" -Qq "${1}" > /dev/null 2>&1 && return 0 || return 1; }
+check_installed_pkg() { "${apt_cmd}" list --installed --quiet "${1}" > /dev/null 2>&1 && return 0 || return 1; }
 
 # Return 0 if the operation passed to this function is in progress.
 check_operation() {
@@ -422,15 +422,15 @@ operation_version() {
 }
 
 operation_show() {
-	local _installed_pkgs _explicitly_installed_pkgs
-	_installed_pkgs="$("${apt_cmd}" list --installed | wc -l)"
+	local _installed_pkgs
+	_installed_pkgs="$("${apt_cmd}" list --installed 2>/dev/null | wc -l)"
 	if [[ "${system_stats}" = true ]]; then
-		msg_info "Nako version %s" "${nako_version}"
-		msg_info "==========================================="
-		msg_info "Total installed packages: ${_installed_pkgs}"
-		#msg_info "Foreign installed packages: ${_foreign_installed_pkgs}"
-		#msg_info "Explicitly installed packages: ${_explicitly_installed_pkgs}"
-		msg_info "==========================================="	
+		echo "Nako version %s" "${nako_version}"
+		echo "==========================================="
+		echo "Total installed packages: ${_installed_pkgs}"
+		#echo "Foreign installed packages: ${_foreign_installed_pkgs}"
+		#echo "Explicitly installed packages: ${_explicitly_installed_pkgs}"
+		echo "==========================================="	
 	else
 		:
 	fi

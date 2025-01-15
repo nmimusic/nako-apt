@@ -599,24 +599,9 @@ while true; do
 			pass_to_apt=false
 			shift 1
 			;;
-		-D | --database)
-			set_operation "database"
-			pass_to_apt=true
-			shift 1
-			;;
-		-T | --deptest)
-			set_operation "deptest"
-			pass_to_apt=true
-			shift 1
-			;;
 		-U | --upgrade)
 			set_operation "sync"
 			pass_to_apt=false
-			shift 1
-			;;
-		-F | --files)
-			set_operation "files"
-			pass_to_apt=true
 			shift 1
 			;;
 		-N | --nako)
@@ -957,7 +942,7 @@ fi
 
 # Execute the operation set by "set_operation"
 case "${operation}" in
-	"version" | "sync" | "query" | "upgrade" | "remove" | "nako" | "getpkgbuild" | "show")
+	"version" | "sync" | "query" | "upgrade" | "remove" | "nako" | "getsource" | "show")
 		run_operation "${operation}"
 		;;
 	"database" | "deptest" | "files")

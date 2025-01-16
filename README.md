@@ -1,6 +1,11 @@
-## Nako for APT - A simple wrapper for using Pacman/Nako syntax with APT
-(C) 2025 Nakamura Musical Industries Dojin Club.
+# Nako for APT - A simple wrapper for using Pacman/Nako syntax with APT
+
+Copyright (c) 2023-2025, Nakamura Musical Industries Dojin Club.
+
+Copyright (c) 2023-2025, Hayate Nakamura (a.k.a. Jin Asanami).
+
 Licensed under 3-clause BSD licence.
+
 ---
 
 Nako APT is a simple wrapper for using Debian/Ubuntu APT command syntax with Alis/Arch Linux/GNU/X's Nako.

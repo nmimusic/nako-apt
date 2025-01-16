@@ -74,6 +74,7 @@ nodeps=false
 nomakepkgconf=false
 pkg_search=false
 pkg_list=false
+pkg_changelog=false
 sync_update=false
 sync_upgrade=false
 pass_to_apt=false
@@ -160,8 +161,6 @@ remove() {
 }
 
 usage (){
-	local _apt_help="${pass_to_apt}"
-
 	local _nako_usage
 	_nako_usage() {
 		echo "Usage:"
@@ -186,9 +185,6 @@ usage (){
 		echo "    --apt         <file>  apt command to use"
 		echo "    --git         <file>  git command to use"
 		echo "    --gitflags    <flags> Pass arguments to git"
-		echo "    --gpg         <file>  gpg command to use"
-		echo "    --gpgflags    <flags> Pass arguments to gpg"
-		echo "    --config      <file>  apt.conf file to use"
 		echo
 		echo "show specific options:"
 		echo "    -s --stats            Display system package statistics"
@@ -202,10 +198,9 @@ usage (){
 	_nako_usage_sync() {
 		echo "usage:  ${nako_cmd} {-S --sync} [options] [package(s)]"
 		echo "options:"
-		echo "  -b, --dbpath <path>  set an alternate database location"
 		echo "  -c, --clean          remove old packages from cache directory (-cc for all)"
-		echo "  -d, --nodeps         skip dependency version checks (-dd to skip all checks)"
-		echo "  -i, --info           view package information (-ii for extended information)"
+		echo "  -d, --nodeps         skip dependency version checks"
+		echo "  -i, --info           view package information"
 		echo "  -p, --print          print the targets instead of performing the operation"
 		echo "  -q, --quiet          show less information for query and search"
 		echo "  -s, --search <regex> search remote repositories for matching strings"
@@ -213,18 +208,14 @@ usage (){
 		echo "                       (-uu enables dist-upgrade, -uuu enables full-upgrade)"
 		echo "  -w, --downloadonly   download packages but do not install/upgrade anything"
 		echo "  -y, --refresh        download fresh package databases from the server"
-		echo "                       (-yy to force a refresh even if up to date)"
-		echo "      --arch <arch>    set an alternate architecture"
-		echo "      --color <when>   colorise the output"
+		echo "      --asdeps         mark packages as auto-installed"
+		echo "      --asexplicit     mark packages as manual-installed"
 		echo "      --confirm        always ask for confirmation"
 		echo "      --debug          display debug messages"
-		echo "      --disable-download-timeout"
-		echo "                       use relaxed timeouts for download"
-		echo "      --gpgdir <path>  set an alternate home directory for GnuPG"
-		echo "      --hookdir <dir>  set an alternate hook location"
-		echo "      --ignore <pkg>   ignore a package upgrade (can be used more than once)"
-		echo "      --ignoregroup <grp>"
-		echo "                       ignore a group upgrade (can be used more than once)"
+		echo "      --no-install-recommends"
+		echo "                       install only required packages"
+		echo "      --install-suggests"
+		echo "                       also install suggested packages"
 		echo "      --noconfirm      do not ask for any confirmation"
 		echo "      --reinstall      reinstall packages"
 	}
@@ -233,23 +224,12 @@ usage (){
 	_nako_usage_query() {
 		echo "usage:  ${nako_cmd} {-Q --query} [options] [package(s)]"
 		echo "options:"
-		echo "  -b, --dbpath <path>  set an alternate database location"
 		echo "  -c, --changelog      view the changelog of a package"
-		echo "  -d, --deps           list packages installed as dependencies [filter]"
-		echo "  -i, --info           view package information (-ii for extended information)"
+		echo "  -i, --info           view package information"
 		echo "  -q, --quiet          show less information for query and search"
 		echo "  -s, --search <regex> search locally-installed packages for matching strings"
-		echo "  -v, --verbose        be verbose"
-		echo "      --arch <arch>    set an alternate architecture"
-		echo "      --color <when>   colorise the output"
-		echo "      --config <path>  set an alternate configuration file"
 		echo "      --confirm        always ask for confirmation"
 		echo "      --debug          display debug messages"
-		echo "      --disable-download-timeout"
-		echo "                       use relaxed timeouts for download"
-		echo "      --gpgdir <path>  set an alternate home directory for GnuPG"
-		echo "      --hookdir <dir>  set an alternate hook location"
-		echo "      --logfile <path> set an alternate log file"
 		echo "      --noconfirm      do not ask for any confirmation"
 	}
 
@@ -257,24 +237,14 @@ usage (){
 	_nako_usage_remove() {
 		echo "usage:  ${nako_cmd} {-R --remove} [options] <package(s)>"
 		echo "options:"
-		echo "  -b, --dbpath <path>  set an alternate database location"
 		echo "  -d, --nodeps         skip dependency version checks (-dd to skip all checks)"
 		echo "  -n, --nosave         remove configuration files"
 		echo "  -p, --print          print the targets instead of performing the operation"
 		echo "  -r, --root <path>    set an alternate installation root"
 		echo "  -s, --recursive      remove unnecessary dependencies"
-		echo "                       (-ss includes explicitly installed dependencies)"
 		echo "  -u, --unneeded       remove unneeded packages"
-		echo "      --arch <arch>    set an alternate architecture"
-		echo "      --color <when>   colorise the output"
-		echo "      --config <path>  set an alternate configuration file"
 		echo "      --confirm        always ask for confirmation"
 		echo "      --debug          display debug messages"
-		echo "      --disable-download-timeout"
-		echo "                       use relaxed timeouts for download"
-		echo "      --gpgdir <path>  set an alternate home directory for GnuPG"
-		echo "      --hookdir <dir>  set an alternate hook location"
-		echo "      --logfile <path> set an alternate log file"
 		echo "      --noconfirm      do not ask for any confirmation"
 	}
 
@@ -290,7 +260,7 @@ usage (){
 		eval "_nako_usage_${operation}"
 	else
 		case "${operation}" in
-			database | deptest | upgrade | files)
+			upgrade)
 				"${apt_cmd}" -h "--${operation}"
 				;;
 			*)
@@ -535,6 +505,8 @@ operation_query(){
 		"${apt_cmd}" list --installed "${apt_args[@]}" "${specified_pkgs[@]}"
 	elif [[ "${pkg_list}" = "true" ]]; then
 		"${dpkg_cmd}" -L "${dpkg_args[@]}" "${specified_pkgs[@]}"
+	elif [[ "${pkg_changelog}" = "true" ]]; then
+		"${apt_cmd}" policy "${apt_args[@]}" "${specified_pkgs[@]}"
 	elif (( "${option_i_count}" >= 1 )); then
 		"${dpkg_cmd}" -s "${dpkg_args[@]}" "${specified_pkgs[@]}"
 	else
@@ -543,13 +515,8 @@ operation_query(){
 }
 
 operation_nako() {
-	#_no_need_packages="$(${apt_cmd} -Qtdq | sed -z "s/\n/ /g")"
 	if [[ ${nako_operation} == "clean_all" ]]; then
-		#if [[ ${_no_need_packages} == "" ]]; then
-		#	exit 0
-		#else
-			run_apt autoremove "${apt_args[@]}"
-		#fi
+		run_apt autoremove "${apt_args[@]}"
 	fi
 }
 
@@ -567,8 +534,8 @@ run_operation() {
 }
 
 # Parse options
-OPTS=("N" "Q" "R" "S" "U" "G" "h" "V" "P" "d" "b:" "a" "y" "e" "s" "u" "i" "c" "q" "n" "k" "r:" "l" "t" "w" "p" "q" "m" "g")
-OPTL=("query" "remove" "sync" "help" "version" "debug" "nako" "show" "dbpath:" "getsource" "noconfirm" "info" "config:" "groups" "makepkg:" "mflags:" "apt:" "git:" "gitflags:" "gpg:" "gpgflags:" "makepkgconf:" "nomakepkgconf" "nodeps" "deps" "list" "refresh" "print" "file" "bash-debug" "msg-debug" "search" "sysupgrade" "color:" "nocolor" "clean" "quiet" "arch:" "confirm" "disable-download-timeout" "curl:" "curlflags:" "unneeded" "native" "puella" "nako-debug" "cascade" "ignoregroup:" "ignore:" "hookdir:" "gpgdir:" "cachedir:" "check" "root:" "asdeps" "asexplicit" "needed" "unrequired" "downloadonly" "foreign" "quiet" "stats" "moo")
+OPTS=("N" "Q" "R" "S" "U" "G" "h" "V" "P" "d" "y" "e" "s" "u" "i" "c" "q" "n" "l" "w" "p" "q" "m" "g")
+OPTL=("query" "remove" "sync" "help" "version" "debug" "nako" "show" "getsource" "changelog" "noconfirm" "info" "groups" "apt:" "git:" "gitflags:" "nodeps" "list" "refresh" "print" "file" "bash-debug" "msg-debug" "search" "sysupgrade" "clean" "quiet" "confirm" "curl:" "curlflags:" "unneeded" "puella" "nako-debug" "asdeps" "asexplicit" "downloadonly" "quiet" "stats" "no-install-recommends" "install-suggests" "moo")
 GETOPT=(-o "$(printf "%s," "${OPTS[@]}")" -l "$(printf "%s," "${OPTL[@]}")" -- "${@}")
 readarray -t PARSED_ARGS < <(getopt "${GETOPT[@]}")
 RAW_ARGS=("${@}")
@@ -636,25 +603,13 @@ if [[ "${pass_to_apt}" = false ]]; then
 	while true; do
 		case "${1}" in
 			# general short options
-			-b | --dbpath)
-				add_args apt "--dbpath '${2}'"
-				shift 2
-				;;
 			-i | --info)
 				option_i_count=$(( option_i_count + 1 ))
 				shift 1
 				;;
-			#-k | --check)
-			#	add_args apt "--check"
-			#	shift 1
-			#	;;
 			-y | --refresh)
 				sync_update="true"
 				#option_y_count=$(( option_y_count + 1))
-				shift 1
-				;;
-			-r | --root)
-				add_args apt "--root" "${2}"
 				shift 1
 				;;
 			-l | --list)
@@ -701,10 +656,6 @@ if [[ "${pass_to_apt}" = false ]]; then
 				esac
 				shift 1
 				;;
-			--cascade)
-				add_args apt "--cascade"
-				shift 1
-				;;
 			--cachedir)
 				add_args apt "--cachedir" "${2}"
 				shift 2
@@ -730,10 +681,6 @@ if [[ "${pass_to_apt}" = false ]]; then
 				add_args apt "--file"
 				shift 1
 				;;
-			--gpgdir)
-				add_args apt "--gpgdir ${2}"
-				shift 2
-				;;
 			--git)
 				git_cmd="${2}"
 				shift 2
@@ -742,24 +689,12 @@ if [[ "${pass_to_apt}" = false ]]; then
 				add_args git "${2}"
 				shift 2
 				;;
-			--hookdir)
-				add_args apt "--hookdir ${2}"
-				shift 2
-				;;
-			--ignoregroup)
-				add_args apt "--ignoregroup ${2}"
-				shift 2
-				;;
-			--ignore)
-				add_args apt "--ignore ${2}"
+			--install-suggests)
+				add_args apt "--install-suggests"
 				shift 2
 				;;
 			--msg-debug)
 				msgdebug=true
-				shift 1
-				;;
-			--native)
-				add_args apt "--native"
 				shift 1
 				;;
 			--noconfirm)
@@ -772,13 +707,12 @@ if [[ "${pass_to_apt}" = false ]]; then
 				nodeps=true
 				shift 1
 				;;
-			--nosave)
-				add_args apt "--purge"
+			--no-install-recommends)
+				add_args apt "--no-install-recommends"
 				shift 1
 				;;
-			--needed)
-				add_args apt "--needed"
-				needed=true
+			--nosave)
+				add_args apt "--purge"
 				shift 1
 				;;
 			--apt)
@@ -873,8 +807,8 @@ if [[ "${pass_to_apt}" = false ]]; then
 					"sync")
 						sync_clean_count=$(( sync_clean_count + 1 ))
 						;;
-					"remove")
-						add_args apt "--cascade"
+					"query")
+						pkg_changelog="true"
 						;;
 					"nako")
 						nako_operation="clean_all"

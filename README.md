@@ -8,7 +8,7 @@ Licensed under 3-clause BSD licence.
 
 ---
 
-Nako APT is a simple wrapper for using Debian/Ubuntu APT command syntax with Alis/Arch Linux/GNU/X's Nako.
+Nako APT is a simple APT/dpkg wrapper with Pacman's syntax.
 
 The name comes from the character, Nako Akahira, in the audio drama, Sakuragi Academy Soothing Society.
 

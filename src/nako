@@ -463,7 +463,7 @@ operation_sync(){
 			"${apt_cmd}" info "${apt_args[@]}"
 		else
 			for _pkg in "${specified_pkgs[@]}"; do
-				"${apt_cmd}" -S "${apt_args[@]}" "-$(yes "i" | head -n "${option_i_count}" | sed -z "s/\n//g")" "${specified_pkgs[@]}"
+				"${apt_cmd}" info "${apt_args[@]}" "${specified_pkgs[@]}"
 			done
 		fi
 	elif [[ "${sync_upgrade}" = true ]]; then

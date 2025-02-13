@@ -446,7 +446,7 @@ operation_sync(){
 		run_sudo rm -rvf /var/cache/apt/archives/*.deb
 		run_sudo rm -rvf /var/lib/apt/lists/*
 	elif (( "${sync_clean_count}" == 1 )); then
-		run_apt clean "${apt_args}"
+		run_apt clean "${apt_args[@]}"
 	fi
 
 	if [[ "${pkg_search}" = true ]]; then

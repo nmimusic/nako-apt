@@ -2,7 +2,7 @@
 
 # Nako - Bash-based APT wrapper with Pacman syntax
 # Copyright (c) 2023-2025, Nakamura Musical Industries Dojin Club.
-# Copyright (c) 2023-2025, Hayate Nakamura (a.k.a. Jin Asanami).
+# Copyright (c) 2023-2025, Jin Asanami.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -78,6 +78,7 @@ pkg_changelog=false
 sync_update=false
 sync_upgrade=false
 pass_to_apt=false
+build_dep=false
 needed=false
 print_performing=false
 quiet=false
@@ -466,6 +467,8 @@ operation_sync(){
 				"${apt_cmd}" info "${apt_args[@]}" "${specified_pkgs[@]}"
 			done
 		fi
+	elif [[ "${build_dep}" = true ]]; then
+		run_apt build-dep "${apt_args[@]}" "${specified_pkgs[@]}"
 	elif [[ "${sync_upgrade}" = true ]]; then
 		run_apt update
 		if (( "${option_u_count}" == 1 )); then
@@ -534,8 +537,8 @@ run_operation() {
 }
 
 # Parse options
-OPTS=("N" "Q" "R" "S" "U" "G" "h" "V" "P" "d" "y" "e" "s" "u" "i" "c" "q" "n" "l" "w" "p" "q" "m" "g")
-OPTL=("query" "remove" "sync" "help" "version" "debug" "nako" "show" "getsource" "changelog" "noconfirm" "info" "groups" "apt:" "git:" "gitflags:" "nodeps" "list" "refresh" "print" "file" "bash-debug" "msg-debug" "search" "sysupgrade" "clean" "quiet" "confirm" "curl:" "curlflags:" "unneeded" "puella" "nako-debug" "asdeps" "asexplicit" "downloadonly" "quiet" "stats" "no-install-recommends" "install-suggests" "moo")
+OPTS=("N" "Q" "R" "S" "U" "G" "h" "V" "P" "d" "y" "e" "s" "u" "i" "c" "q" "n" "l" "w" "p" "q" "m" "g" "b")
+OPTL=("query" "remove" "sync" "help" "version" "debug" "nako" "show" "getsource" "changelog" "noconfirm" "info" "groups" "apt:" "git:" "gitflags:" "nodeps" "list" "refresh" "print" "file" "bash-debug" "msg-debug" "search" "sysupgrade" "clean" "quiet" "confirm" "curl:" "curlflags:" "unneeded" "puella" "nako-debug" "asdeps" "asexplicit" "downloadonly" "quiet" "stats" "no-install-recommends" "install-suggests" "moo" "build-dep")
 GETOPT=(-o "$(printf "%s," "${OPTS[@]}")" -l "$(printf "%s," "${OPTL[@]}")" -- "${@}")
 readarray -t PARSED_ARGS < <(getopt "${GETOPT[@]}")
 RAW_ARGS=("${@}")
@@ -851,6 +854,10 @@ if [[ "${pass_to_apt}" = false ]]; then
 						unavailable_in_this_operation
 						;;
 				esac
+				shift 1
+				;;
+			-b | --build-dep)
+				build_dep=true
 				shift 1
 				;;
 			#-- for getopt --#

@@ -14,6 +14,6 @@ The name comes from the character, Nako Akahira, in the audio drama, Sakuragi Ac
 
 ---
 
-Nako APT‚ÍADebian/Ubuntu‚ÌAPT‚ğAAlis/Arch Linux/GNU/X‚ÌNako‚Ì\•¶‚Å‘€ì‚·‚éƒ‰ƒbƒp[B–¼‘O‚Íu÷–ØŠw‰€–ü‚â‚µ•”v‚Ì“oêl•¨‚Å‚ ‚éuÔ•½“Şqv‚É—R—ˆ‚·‚éB
+Nako APTã¯ã€Debian/Ubuntuã®APTã‚’ã€Alis/Arch Linux/GNU/Xã®Nakoã®æ§‹æ–‡ã§æ“ä½œã™ã‚‹ãƒ©ãƒƒãƒ‘ãƒ¼ã€‚åå‰ã¯ã€Œæ¡œæœ¨å­¦åœ’ç™’ã‚„ã—éƒ¨ã€ã®ç™»å ´äººç‰©ã§ã‚ã‚‹ã€Œèµ¤å¹³å¥ˆå­ã€ã«ç”±æ¥ã™ã‚‹ã€‚
 
-Original Nako is here¨https://github.com/nmimusic/nako/
+Original Nako is hereâ†’https://github.com/nmimusic/nako/

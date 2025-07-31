@@ -254,8 +254,8 @@ usage (){
 
 	if [[ "${operation}" = "none" ]]; then
 		_nako_usage
-	elif [[ "${_apt_help}" = true ]]; then
-		"${apt_cmd}" -h "--${operation}"
+	#elif [[ "${_apt_help}" = true ]]; then
+	#	"${apt_cmd}" -h "--${operation}"
 	elif [[ "$(type -t "_nako_usage_${operation}" )" = "function" ]]; then
 		eval "_nako_usage_${operation}"
 	else

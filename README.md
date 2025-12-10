@@ -1,8 +1,6 @@
 # Nako for APT - A simple wrapper for using Pacman/Nako syntax with APT
 
-Copyright (c) 2023-2025, Nakamura Musical Industries Dojin Club.
-
-Copyright (c) 2023-2025, Hayate Nakamura (a.k.a. Jin Asanami).
+Copyright (c) 2023-2025, Nakamura Musical Industries Dojin Club/NIPPON RURITANIA.
 
 Licensed under 3-clause BSD licence.
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 # Nako - Bash-based APT wrapper with Pacman syntax
-# Copyright (c) 2023-2025, Nakamura Musical Industries Dojin Club/NIPPON RURITANIA.
-# Copyright (c) 2023-2025, Jin Asanami.
+# Copyright (c) 2023-2026, Nippon Ruritania Music Assembly
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,7 +29,7 @@
 set -eu
 
 # Default Settings
-nako_version="0.9.1"
+nako_version="0.9.2"
 nako_name="Nako"
 nako_cmd="nako"
 nako_path="$(dirname $(realpath ${0}))/$(basename ${0})"
@@ -202,6 +201,8 @@ usage (){
 		echo "  -c, --clean          remove old packages from cache directory (-cc for all)"
 		echo "  -d, --nodeps         skip dependency version checks"
 		echo "  -i, --info           view package information"
+		echo "  --target-release, --default-release"
+		echo "                       specify the target release"
 		echo "  -p, --print          print the targets instead of performing the operation"
 		echo "  -q, --quiet          show less information for query and search"
 		echo "  -s, --search <regex> search remote repositories for matching strings"
@@ -384,8 +385,7 @@ operation_version() {
 	echo
 	echo "Nako is an APT wrapper with Arch's Pacman syntax."
 	echo
-	echo "Copyright (C) 2023-2025 Nakamura Musical Industries Dojin Club/NIPPON RURITANIA"
-	echo "Copyright (C) 2023-2025 Jin Asanami"
+	echo "Copyright (C) 2023-2026 Nippon Ruritania Music Assembly"
 	echo
 	echo "This programme may be freely redistributed under"
 	echo "the terms of the 3-clause BSD License."
@@ -538,7 +538,7 @@ run_operation() {
 
 # Parse options
 OPTS=("N" "Q" "R" "S" "U" "G" "h" "V" "P" "d" "y" "e" "s" "u" "i" "c" "q" "n" "l" "w" "p" "q" "m" "g" "b")
-OPTL=("query" "remove" "sync" "help" "version" "debug" "nako" "show" "getsource" "changelog" "noconfirm" "info" "groups" "apt:" "git:" "gitflags:" "nodeps" "list" "refresh" "print" "file" "bash-debug" "msg-debug" "search" "sysupgrade" "clean" "quiet" "confirm" "curl:" "curlflags:" "unneeded" "puella" "nako-debug" "asdeps" "asexplicit" "downloadonly" "quiet" "stats" "no-install-recommends" "install-suggests" "moo" "build-dep")
+OPTL=("query" "remove" "sync" "help" "version" "debug" "nako" "show" "getsource" "changelog" "noconfirm" "info" "groups" "apt:" "git:" "gitflags:" "nodeps" "list" "refresh" "print" "file" "bash-debug" "msg-debug" "search" "sysupgrade" "clean" "quiet" "confirm" "curl:" "curlflags:" "unneeded" "puella" "nako-debug" "asdeps" "asexplicit" "downloadonly" "quiet" "stats" "no-install-recommends" "install-suggests" "moo" "build-dep" "target-release:" "default-release:")
 GETOPT=(-o "$(printf "%s," "${OPTS[@]}")" -l "$(printf "%s," "${OPTL[@]}")" -- "${@}")
 readarray -t PARSED_ARGS < <(getopt "${GETOPT[@]}")
 RAW_ARGS=("${@}")
@@ -751,6 +751,17 @@ if [[ "${pass_to_apt}" = false ]]; then
 			--stats)
 				system_stats=true
 				shift 1
+				;;
+			--target-release | --default-release)
+				case "${operation}" in
+					"sync" | "remove")
+						add_args apt "--target-release" "${2}"
+					;;
+					*)
+						unavailable_in_this_operation
+						;;
+				esac
+				shift 2
 				;;
 
 			# Other long options

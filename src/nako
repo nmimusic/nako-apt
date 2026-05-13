@@ -772,13 +772,7 @@ if [[ "${pass_to_apt}" = false ]]; then
 				exit 0
 				;;
 			--moo)
-				echo "                 (__) "
-				echo "                 (oo) "
-				echo "           /------\/ "
-				echo "          / |    ||   "
-				echo "         *  /\---/\ "
-				echo "            ~~   ~~   "
-				echo "... Have you mooed today? ..."
+				"${apt_cmd}" moo
 				exit 0
 				;;
 

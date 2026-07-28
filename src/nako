@@ -503,6 +503,23 @@ operation_sync(){
 	fi
 }
 
+operation_upgrade(){
+	local _pkg
+	
+	# Install local binary package
+	if [[ "${#specified_pkgs[@]}" != "0" ]]; then
+		for _pkg in ${specified_pkgs[@]}; do
+			if [[ "${_pkg:0:1}" == "/" ]] || [[ "${_pkg:0:2}" == "./" ]]; then	
+				#echo "${_pkg}"
+				run_apt install "${apt_args[@]}" "${_pkg}"
+			else
+				#echo "./${_pkg}"
+				run_apt install "${apt_args[@]}" "./${_pkg}"
+			fi
+		done	
+	fi
+}
+
 operation_query(){
 	if [[ "${pkg_search}" = true ]]; then
 		"${apt_cmd}" list --installed "${apt_args[@]}" "${specified_pkgs[@]}"
@@ -538,7 +555,7 @@ run_operation() {
 
 # Parse options
 OPTS=("N" "Q" "R" "S" "U" "G" "h" "V" "P" "d" "y" "e" "s" "u" "i" "c" "q" "n" "l" "w" "p" "q" "m" "g" "b")
-OPTL=("query" "remove" "sync" "help" "version" "debug" "nako" "show" "getsource" "changelog" "noconfirm" "info" "groups" "apt:" "git:" "gitflags:" "nodeps" "list" "refresh" "print" "file" "bash-debug" "msg-debug" "search" "sysupgrade" "clean" "quiet" "confirm" "curl:" "curlflags:" "unneeded" "puella" "nako-debug" "asdeps" "asexplicit" "downloadonly" "quiet" "stats" "no-install-recommends" "install-suggests" "moo" "build-dep" "target-release:" "default-release:")
+OPTL=("query" "remove" "sync" "help" "version" "debug" "upgrade" "nako" "show" "getsource" "changelog" "noconfirm" "info" "groups" "apt:" "git:" "gitflags:" "nodeps" "list" "refresh" "print" "file" "bash-debug" "msg-debug" "search" "sysupgrade" "clean" "quiet" "confirm" "curl:" "curlflags:" "unneeded" "puella" "nako-debug" "asdeps" "asexplicit" "downloadonly" "quiet" "stats" "no-install-recommends" "install-suggests" "moo" "build-dep" "target-release:" "default-release:")
 GETOPT=(-o "$(printf "%s," "${OPTS[@]}")" -l "$(printf "%s," "${OPTL[@]}")" -- "${@}")
 readarray -t PARSED_ARGS < <(getopt "${GETOPT[@]}")
 RAW_ARGS=("${@}")
@@ -570,7 +587,7 @@ while true; do
 			shift 1
 			;;
 		-U | --upgrade)
-			set_operation "sync"
+			set_operation "upgrade"
 			pass_to_apt=false
 			shift 1
 			;;
@@ -888,7 +905,7 @@ fi
 
 # Execute the operation set by "set_operation"
 case "${operation}" in
-	"version" | "sync" | "query" | "upgrade" | "remove" | "nako" | "getsource" | "show")
+	"version" | "sync" | "query" | "upgrade" | "remove" | "upgrade" | "nako" | "getsource" | "show")
 		run_operation "${operation}"
 		;;
 	"database" | "deptest" | "files")
